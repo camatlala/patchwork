@@ -18,7 +18,9 @@ def tiny_git_repo():
     so the fixture source itself stays free of a nested .git."""
     tmp_dir = tempfile.mkdtemp(prefix="patchwork_tiny_repo_")
     for name in os.listdir(FIXTURE_PATH):
-        shutil.copy(os.path.join(FIXTURE_PATH, name), tmp_dir)
+        src = os.path.join(FIXTURE_PATH, name)
+        if os.path.isfile(src):
+            shutil.copy(src, tmp_dir)
     subprocess.run(["git", "init", "-q"], cwd=tmp_dir, check=True)
     subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp_dir, check=True)
     subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_dir, check=True)
@@ -29,8 +31,17 @@ def tiny_git_repo():
 
 
 def test_agent_can_fix_bug_and_pass_tests(tiny_git_repo):
+    # Bind-mount the fixture directly instead of git-cloning a file:// URL:
+    # the sandbox container runs inside Docker Desktop's Linux VM, which
+    # can't resolve a host filesystem path via `git clone file://...`.
     manager = SandboxManager(image="patchwork-sandbox:latest")
-    container_id = manager.create_session(f"file://{tiny_git_repo}")
+    container = manager._client.containers.run(
+        "patchwork-sandbox:latest",
+        detach=True,
+        working_dir="/workspace",
+        volumes={tiny_git_repo: {"bind": "/workspace", "mode": "rw"}},
+    )
+    container_id = container.id
 
     fixed_content = "def add(a, b):\n    return a + b\n"
     write_call = ToolCall(id="1", name="write_file", arguments={"path": "calc.py", "content": fixed_content})

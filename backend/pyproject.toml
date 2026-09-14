@@ -6,3 +6,4 @@ requires-python = ">=3.11"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 markers = ["integration", "e2e"]
+norecursedirs = ["tests/e2e/fixtures"]
