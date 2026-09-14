@@ -1,29 +1,67 @@
-# Patchwork — AI Coding Harness
+<h1 align="center">🧵 Patchwork</h1>
+<p align="center"><b>AI Coding Harness</b></p>
 
-Self-hosted webapp where an AI agent inspects, edits, and tests code inside an isolated Docker sandbox, with token-optimized context (relevance scoring, summarization, diffing, caching, pruning).
+<p align="center">
+  <!-- Typing SVG by DenverCoder1 - https://github.com/DenverCoder1/readme-typing-svg -->
+  <a href="https://github.com/DenverCoder1/readme-typing-svg">
+    <img src="https://readme-typing-svg.demolab.com/?lines=Self-hosted+AI+coding+agent;Docker-isolated+sandbox+per+session;Token-optimized+context+pipeline;Diff-based+updates+%2B+caching+%2B+pruning&font=Fira%20Code&center=true&width=520&height=45&color=f75c7e&vCenter=true&pause=1000&size=20" /></a>
+</p>
 
-## Prerequisites
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11+-14354C.svg?logo=python&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-009688.svg?logo=fastapi&logoColor=white">
+  <img alt="React" src="https://img.shields.io/badge/React-20232a.svg?logo=react&logoColor=%2361DAFB">
+  <img alt="SQLite" src="https://img.shields.io/badge/SQLite-07405e.svg?logo=sqlite&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED.svg?logo=docker&logoColor=white">
+  <img alt="pytest" src="https://img.shields.io/badge/Pytest-0A9EDC.svg?logo=pytest&logoColor=white">
+  <img alt="Self-hosted" src="https://custom-icon-badges.demolab.com/badge/-Self--hosted-1F222E?style=flat&logoColor=white&logo=home">
+</p>
 
-- Python 3.11+
-- Node 18+ / npm
-- Docker daemon running (required for sandbox execution — Tasks touching `sandbox/` and the e2e test need it)
-- An API key for at least one LLM provider (Anthropic and/or OpenAI)
+<p align="center">
+  Point an AI agent at a git repo. It inspects, edits, and tests code inside an isolated Docker sandbox — with relevance scoring, summarization, diffing, caching, and pruning keeping token spend down.
+</p>
 
-## Build the sandbox image
+<br/>
+
+<details open>
+<summary><h2>🧩 Architecture</h2></summary>
+
+FastAPI backend owns the agent loop, LLM provider adapters, Docker orchestration, and the context-optimization pipeline. React SPA frontend streams session activity over a websocket. One Docker container per session is the sandboxed execution surface — the agent loop itself runs in the backend process, never inside the container.
+
+| Piece | Role |
+|---|---|
+| `app/agent/` | Turn-based agent loop + tool dispatch (read/write file, run command) |
+| `app/context/` | Cache → diff → relevance score → summarize → prune pipeline |
+| `app/sandbox/` | Docker session manager (`create_session` / `exec` / `destroy`) |
+| `app/llm/` | Provider-agnostic adapter (Claude, OpenAI) |
+| `app/api/` | REST + websocket for the frontend |
+
+</details>
+
+<details open>
+<summary><h2>🚀 Quickstart</h2></summary>
+
+**Prerequisites:** Python 3.11+, Node 18+, Docker daemon running, an API key for Claude and/or OpenAI.
 
 ```bash
+# 1. Build the sandbox image
 docker build -t patchwork-sandbox:latest docker/
-```
 
-## Backend
-
-```bash
+# 2. Backend
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload
+
+# 3. Frontend (separate terminal)
+cd frontend
+npm install
+npm run dev
 ```
 
-Environment variables (all optional, shown with defaults):
+</details>
+
+<details>
+<summary><h2>⚙️ Environment Variables</h2></summary>
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -33,21 +71,24 @@ Environment variables (all optional, shown with defaults):
 | `PATCHWORK_MAX_TOKENS` | `500000` | Token budget per session before pausing |
 | `ANTHROPIC_API_KEY` | — | Required to use the Claude adapter |
 | `OPENAI_API_KEY` | — | Required to use the OpenAI adapter |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | Frontend → backend URL |
 
-Run tests:
+</details>
 
-```bash
-pytest tests/unit -v                    # no external deps
-pytest tests/integration -v -m integration   # requires Docker daemon
-pytest tests/e2e -v -m e2e                   # requires Docker daemon + sandbox image built
-```
-
-## Frontend
+<details>
+<summary><h2>🧪 Testing</h2></summary>
 
 ```bash
-cd frontend
-npm install
-npm run dev
+pytest tests/unit -v                          # pure logic, no external deps
+pytest tests/integration -v -m integration    # requires Docker daemon
+pytest tests/e2e -v -m e2e                    # requires Docker daemon + sandbox image built
 ```
 
-Set `VITE_API_BASE_URL` if the backend isn't on `http://localhost:8000`.
+</details>
+
+<details>
+<summary><h2>📌 Status</h2></summary>
+
+Core context pipeline, LLM adapters, agent loop, REST/websocket API, and frontend skeleton are built and unit/integration tested. Docker-dependent tests (`sandbox/`, `tests/e2e`) need a live daemon to verify — run the commands above once Docker is confirmed working locally.
+
+</details>
