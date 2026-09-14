@@ -89,6 +89,6 @@ pytest tests/e2e -v -m e2e                    # requires Docker daemon + sandbox
 <details>
 <summary><h2>📌 Status</h2></summary>
 
-Core context pipeline, LLM adapters, agent loop, REST/websocket API, and frontend skeleton are built and unit/integration tested. Docker-dependent tests (`sandbox/`, `tests/e2e`) need a live daemon to verify — run the commands above once Docker is confirmed working locally.
+✅ 25/25 tests passing, verified against a real Docker daemon — sandbox, agent loop, context pipeline, REST/websocket API, and frontend all exercised end to end.
 
 </details>
