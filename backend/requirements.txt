@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+docker
+websockets
+pytest
+httpx
+anthropic
+openai
